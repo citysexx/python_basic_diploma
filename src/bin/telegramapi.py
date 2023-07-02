@@ -1,5 +1,5 @@
 import telebot
-from src.utils.config import TELEGRAM_TOKEN
+from src.configs.config import TELEGRAM_TOKEN
 import recorder
 from src.utils.regex import *
 import re

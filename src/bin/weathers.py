@@ -1,6 +1,6 @@
 from typing import Dict, Any, AnyStr
 from random import choice
-from src.utils.config import OPENING_PHRASES
+from src.configs.config import OPENING_PHRASES
 
 
 class CurrentWeather:

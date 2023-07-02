@@ -4,12 +4,12 @@ import swagger_client
 from swagger_client.rest import ApiException
 import ast
 from weathers import CurrentWeather
-import src.utils.config
+import src.configs.config
 
 
 # Configure API key authorization: ApiKeyAuth
 configuration = swagger_client.Configuration()
-configuration.api_key['key'] = src.utils.config.WEATHER_TOKEN
+configuration.api_key['key'] = src.configs.config.WEATHER_TOKEN
 
 # create an instance of the API class
 api_instance = swagger_client.APIsApi(swagger_client.ApiClient(configuration))
