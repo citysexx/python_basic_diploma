@@ -7,11 +7,11 @@ def log_message(message: ['telebot.types.Message']) -> None:
     """This function logs history: who, when and what wrote to the bot"""
 
     try:
-        mkdir('data')
+        mkdir('../data')
     except FileExistsError:
         pass
 
-    with open('data/history.log', 'a', encoding='utf-8') as file:
+    with open('../data/history.log', 'a', encoding='utf-8') as file:
         string = f'On {datetime.utcfromtimestamp(message.date)} ' \
                  f'user {message.from_user.first_name} ' \
                  f'{message.from_user.last_name} ' \
