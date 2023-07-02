@@ -1,9 +1,7 @@
 import telebot
-from swagger_client.rest import ApiException
-from utils.config import TELEGRAM_TOKEN
-import weather
+from src.utils.config import TELEGRAM_TOKEN
 import recorder
-from utils.regex import *
+from src.utils.regex import *
 import re
 
 
@@ -22,7 +20,6 @@ def send_welcome(message):
 # Handle all other messages with content_type 'text' (content_types defaults to ['text'])
 @bot.message_handler(func=lambda message: True)
 def echo_message(message):
-    # TODO process the incoming messages using regex
     if any(re.search(template, message.text) for template in hi_regex):
         bot.reply_to(message, 'здесь будет один из ответов на приветствие')
 
