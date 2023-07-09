@@ -1,5 +1,5 @@
 from __future__ import print_function
-from typing import AnyStr, NoReturn
+from typing import AnyStr
 import swagger_client
 from swagger_client.rest import ApiException
 import ast
@@ -15,7 +15,7 @@ configuration.api_key['key'] = src.configs.config.WEATHER_TOKEN
 api_instance = swagger_client.APIsApi(swagger_client.ApiClient(configuration))
 
 
-def current_weather(city: AnyStr) -> ['CurrentWeather'] or NoReturn:
+def current_weather(city: AnyStr) -> ['CurrentWeather'] or None:
     """
     This function gets current weather in the city the user wants.
     It requests the information from the weather api and dumps the received
@@ -29,8 +29,10 @@ def current_weather(city: AnyStr) -> ['CurrentWeather'] or NoReturn:
         # the reason being that it needs a str instance, not InlineResponse200
         data = ast.literal_eval(str(api_response))
         current = CurrentWeather(data)
+
         return current
-    raise ApiException
+
+    return None
 
 
 if __name__ == '__main__':
