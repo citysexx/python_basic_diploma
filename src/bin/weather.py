@@ -1,5 +1,5 @@
 from __future__ import print_function
-from typing import AnyStr
+from typing import AnyStr, List
 import swagger_client
 from swagger_client.rest import ApiException
 import ast
@@ -31,6 +31,27 @@ def current_weather(city: AnyStr) -> ['CurrentWeather'] or None:
         current = CurrentWeather(data)
 
         return current
+
+    return None
+
+
+def search_locations(data: AnyStr) -> List or None:
+    """
+    This function serves as a search engine for the entered data. Due to
+    the fact that, if the user enters city name, the various cities can appear
+    as a result. According to the API, the user can also enter postal code and
+    location in decimal degrees. This function searches the results from string
+    and returns a list of possible variants. If nothing found, None is returned.
+
+    Attributes:
+        :param data: This is a string which can represent either a city name
+        or anything else related to city (e.g. postal, location)
+
+    """
+    api_response = api_instance.search_autocomplete_weather(data)
+    if api_response:
+
+        return api_response
 
     return None
 
