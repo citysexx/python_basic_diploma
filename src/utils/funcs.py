@@ -1,12 +1,10 @@
 import re
-
 import telebot
 from typing import Dict, AnyStr, List
-
 from swagger_client.rest import ApiException
-
 from src.utils.regex import *
 import src.bin.weather as weather
+from telebot import types
 
 
 def from_string(user_input: ['telebot.types.Message']) -> Dict[AnyStr, List]:
@@ -43,3 +41,24 @@ def from_string(user_input: ['telebot.types.Message']) -> Dict[AnyStr, List]:
             flags['said_cities'].append(city_responded.city)
 
     return flags
+
+
+def interpret(message: ['types.Message']) -> AnyStr:
+    """
+    This function is needed for the program to understand the user's
+    buttons press as corresponding commands
+    """
+    pure_str = message.text
+
+    if pure_str == "❓️ Какие команды ты можешь выполнять?" or pure_str == '/help':
+        return '/help'
+    if pure_str == "👨‍💻️ Где твой хозяин, кто тебя создал?" or pure_str == '/authors':
+        return '/authors'
+    if pure_str == "🖼️ Как ты выглядишь в реальной жизни?" or pure_str == '/real':
+        return '/real'
+    if pure_str == '👈️ Вернуться в главное меню' or pure_str == '/main':
+        return '/main'
+    if pure_str == '👇️ Какая погода у меня тут?' or pure_str == '/autoloc':
+        return '/autoloc'
+    if pure_str == '⚡️ Погода прямо сейчас' or pure_str == '/now':
+        return '/now'

@@ -1,50 +1,49 @@
 import telebot
-
 from src.bin import weather
 from src.configs.config import TELEGRAM_TOKEN, GUIDE
 import recorder
-from src.utils.funcs import from_string
-from telebot import types
+from src.utils.funcs import from_string, interpret
+from src.gui import markups
 
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
 
-# Handle '/start' and '/main commands'
-@bot.message_handler(commands=['start', 'main'])
+# Handle '/start' command
+@bot.message_handler(commands=['start'])
 def send_welcome(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-    help_btn = types.KeyboardButton("❓️Какие команды ты можешь выполнять?")
-    owner_btn = types.KeyboardButton("👨‍💻️Где твой хозяин, кто тебя создал?")
-    cat_real_look_btn = types.KeyboardButton("🖼️Как ты выглядишь в реальной жизни?")
 
-    markup.add(
-        help_btn,
-        owner_btn,
-        cat_real_look_btn
+    bot.send_message(message.chat.id, f'Здравствуйте, {message.from_user.first_name}!\n'
+                                      f'Добро пожаловать! Вы используете погодного бота. '
+                                      f'Примите участие в разработке, пробуя и тестируя. '
+                                      f'Используйте кнопки ниже для навигации.',
+                     reply_markup=markups.main())
+
+
+# Handle messages with content_type 'location', goes after using /autoloc
+@bot.message_handler(content_types=['location'])
+def echo_location_message(message):
+    loc_from_string = str(message.location.latitude) + ',' + str(message.location.longitude)
+    location_data = weather.search_locations(loc_from_string)
+    location_text_data = [
+        item for item in [
+            location_data[0]['name'],
+            location_data[0]['region'],
+            location_data[0]['country']
+        ]
+        if item
+    ]
+
+    bot.send_message(
+        chat_id=message.chat.id,
+        text=f'Ваше местоположение:\n{", ".join(location_text_data)}\n'
+             f'Выберите дальнейшие действия:',
+        reply_markup=markups.weather_main()
     )
-    if message.text == '/start':
-        bot.send_message(message.chat.id, f'Привет, {message.from_user.first_name}!\n'
-                                          f'Добро пожаловать! '
-                                          f'Используйте кнопки ниже для навигации.',
-                         reply_markup=markup)
-    else:
-        bot.reply_to(message, 'Главное меню', reply_markup=markup)
 
+    # TODO сделать меню погоды либо current либо опциональная, на прогноз. Либо астрономи
 
-# handle the /autoloc command
-@bot.message_handler(commands=['autoloc'])
-def send_weather_by_loc(message):
-    markup = types.ReplyKeyboardMarkup(is_persistent=False,
-                                       one_time_keyboard=True,
-                                       resize_keyboard=True)
-    location_btn = types.KeyboardButton(text="📍️Поделиться своей геопозицией",
-                                        request_location=True)
-    main_menu_btn = types.KeyboardButton('/main')
-    markup.add(location_btn, main_menu_btn)
-    bot.send_message(chat_id=message.chat.id,
-                     text='Поделитесь своим местоположением, чтобы продолжить. Нажмите на кнопку ниже:',
-                     reply_markup=markup)
+    recorder.log_message(message)
 
 
 # handle the /manualloc command
@@ -59,33 +58,36 @@ def send_weather_manually(message):
     pass
 
 
-# Handle messages with content_type 'location'
-@bot.message_handler(content_types=['location'])
-def echo_message(message):
-    loc_from_string = str(message.location.latitude) + ',' + str(message.location.longitude)
-    location_data = weather.search_locations(loc_from_string)
-    city_name = location_data[0]['name']
-    region_name = location_data[0]['region']
-    country_name = location_data[0]['country']
-    bot.reply_to(message, f'Ваше местоположение: {city_name}, {region_name}, {country_name}')
-    # TODO регион иногда пустой. Предусмотреть это, там лишняя запятая. Наверное, join.
-    # TODO сделать меню погоды либо current либо опциональная, на прогноз. Либо астрономи
-    bot.reply_to(message, weather.current_weather(loc_from_string))
-    recorder.log_message(message)
-
-
 # handle questions from the main menu
-@bot.message_handler(func=lambda message: True, content_types=['text'])
+@bot.message_handler(content_types=['text'])
 def echo_text_message(message):
-    pure_str = message.text
-    if pure_str == "❓️Какие команды ты можешь выполнять?" or pure_str == '/help':
-        bot.send_message(message.chat.id, GUIDE)
-    if pure_str == "👨‍💻️Где твой хозяин, кто тебя создал?" or pure_str == '/authors':
+
+    if interpret(message) == '/help':
+        bot.send_message(message.chat.id, GUIDE, reply_markup=markups.interactive_help())
+
+    if interpret(message) == '/authors':
         bot.send_message(message.chat.id, 'Github моего хозяина:\nhttps://github.com/citysexx')
-    if pure_str == "🖼️Как ты выглядишь в реальной жизни?" or pure_str == '/real':
+
+    if interpret(message) == '/real':
         bot.send_photo(message.chat.id,
                        'https://photos.app.goo.gl/4Nx8uEyyqFjf6NCv6',
                        caption='Вот так я выгляжу, когда не работаю')
+
+    if interpret(message) == '/main':
+        bot.send_message(message.chat.id, 'Главное меню', reply_markup=markups.main())
+
+    if interpret(message) == '/autoloc':
+        bot.send_message(
+            chat_id=message.chat.id,
+            text='Поделитесь своим местоположением, чтобы продолжить. Нажмите на кнопку ниже:',
+            reply_markup=markups.location()
+        )
+
+    if interpret(message) == '/now':
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=weather.current_weather('vladivostok').__str__()
+        )
 
 
 if __name__ == '__main__':
