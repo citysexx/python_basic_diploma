@@ -1,4 +1,6 @@
 __pycache__/
 src/utils/__pycache__/
-src/data/history.log
+src/logs/user_history.log
 .idea
+profiles
+src/logs

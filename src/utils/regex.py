@@ -45,9 +45,9 @@ help_regex = [
     re.compile(r'\b(есть)? вопрос\b', re.IGNORECASE)
 ]
 
-# if a user curses, the program offers help anyway
+# if a user curses, the program blames the user for this
 curse_regex = [
-    re.compile(r'[^ру]бля([тд])?\w?', re.IGNORECASE),
+    re.compile(r'([^ру])?бля([тд])?\w?', re.IGNORECASE),
     re.compile(r'ху[йяеюи]\w?', re.IGNORECASE),
     re.compile(r'((про)|(у)|(на)|(об[ьъ])|(раз[ьъ])|(в[ъь])|(за)|(до))[её]б([ауоиел])?\w?', re.IGNORECASE),
     re.compile(r'\b[её]б([ауоиел])?\w?', re.IGNORECASE),
@@ -55,30 +55,6 @@ curse_regex = [
     re.compile(r'хер((ня)|(ли)|(а)|(у)|(ов)|(ен)|(ну))\w?')
 ]
 
-# templates that the program should consider as talking about the present time
-current_regex = [
-    re.compile(r'сегодня[\w\s]?', re.IGNORECASE),
-    re.compile(r'\bсейчас\w?', re.IGNORECASE),
-    re.compile(r'(в|на) (этот|эту) (час|минуту)', re.IGNORECASE),
-    re.compile(r'онлайн|online|синоптики|сводка|метео', re.IGNORECASE)
-]
 
-# templates that the program should consider as talking about the future time
-future_regex = [
-    re.compile(r'[^доа] завтра\b', re.IGNORECASE),
-    re.compile(r'date', re.IGNORECASE),
-    re.compile(r'\bпонедельник\b|\bвторник\b|\bсреда\b|\bчетверг\b|\bпятница\b|\bсуббота\b|\bвоскресенье\b', re.IGNORECASE),
-    re.compile(r'\bближайшие дни\b', re.IGNORECASE),
-    re.compile(r'\bпослезавтра\b', re.IGNORECASE),
-    re.compile(r'\bнедел\w?', re.IGNORECASE),
-    re.compile(r'вероятность чего то (грозы)', re.IGNORECASE),
-    re.compile(r'\bпрогноз|\bсиноптики\b|\bсводка\b|\bметео', re.IGNORECASE),
-    re.compile(r'\bутром\b|\bдн[её]м\b|\bвечером\b|\bночью\b', re.IGNORECASE)
-]
-
-# templates that depict the nature phenomenon
-nature_disasters_regex = [
-    re.compile(r'')
-]
-
-
+if __name__ == '__main__':
+    raise UserWarning(f'Not designed as a launcher!!!')
