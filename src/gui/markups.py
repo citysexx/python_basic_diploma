@@ -1,4 +1,4 @@
-from typing import List, AnyStr
+from typing import List
 from telebot import types
 from src.bin import weather
 
@@ -12,11 +12,15 @@ def main() -> ['types.ReplyKeyboardMarkup']:
     """
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     help_btn = types.KeyboardButton("❓️ Какие команды ты можешь выполнять?")
+    auto_location_btn = types.KeyboardButton('🧭️ Искать по моему местоположению')
+    manual_location_btn = types.KeyboardButton('🔍️ Искать другой город')
     owner_btn = types.KeyboardButton("👨‍💻️ Где твой хозяин, кто тебя создал?")
     cat_real_look_btn = types.KeyboardButton("🖼️ Как ты выглядишь в реальной жизни?")
 
     markup.add(
         help_btn,
+        auto_location_btn,
+        manual_location_btn,
         owner_btn,
         cat_real_look_btn
     )
@@ -182,6 +186,8 @@ def if_wants_hourly_forecast(forecast_object: ['weather.ForecastWeather']) -> ['
     for daily_forecast in forecast_object.daily_forecasts:
         markup.add(types.KeyboardButton(f'Почасовой прогноз на {daily_forecast.date}'))
 
+    markup.add(types.KeyboardButton('🔍️ Искать другой город'))
+    markup.add(types.KeyboardButton('⚡️ Погода прямо сейчас'))
     markup.add(types.KeyboardButton('👈️ Вернуться в главное меню'))
 
     return markup

@@ -1,5 +1,5 @@
 from typing import List, AnyStr, Dict
-from os import path, chdir, curdir
+from os import path, curdir
 
 
 # token for telegram api
@@ -69,6 +69,12 @@ TO_USER_RAW_RESPONSES: Dict[AnyStr, List] = {
         "curse": CURSE_RESPONSES,
         "thx": THX_RESPONSES
     }
+
+# the template phrases from the bot as notifications or instructions
+GENERIC_PHRASES: Dict[AnyStr, AnyStr] = {
+    line.rstrip().split('><')[0]: line.rstrip().split('><')[1]
+    for line in open(path.join(working_dir, 'notifications.txt'), 'r', encoding='utf-8')
+}
 
 if __name__ == '__main__':
     raise UserWarning(f'Not designed as a launcher!!!')

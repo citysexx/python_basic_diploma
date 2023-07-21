@@ -1,16 +1,11 @@
 import re
-from os import path, mkdir
-from os import remove as rm
 import telebot
 from src.bin import weather
-from src.configs.config import TELEGRAM_TOKEN, GUIDE, WELCOME, TO_USER_RAW_RESPONSES
+from src.configs.config import TELEGRAM_TOKEN, GUIDE, WELCOME, TO_USER_RAW_RESPONSES, GENERIC_PHRASES
 from src.bin import recorder
 from src.utils.funcs import interpret, profile_user, feel_msg, provide_random_phrase
 from src.gui import markups
 import pickle
-from datetime import datetime
-import speech_recognition as spr
-import soundfile as snd
 
 
 # get api token
@@ -20,7 +15,7 @@ bot = telebot.TeleBot(TELEGRAM_TOKEN)
 # Handle '/start' command
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-
+    """This function is called at start"""
     # log msg
     recorder.log_message(message)
     profile_user(
@@ -41,6 +36,7 @@ def send_welcome(message):
 # Handle messages with content_type 'location', goes after using /autoloc
 @bot.message_handler(content_types=['location'])
 def echo_location_message(message):
+    """This function processes location input"""
     # log location request
     recorder.log_message(message)
 
@@ -52,6 +48,7 @@ def echo_location_message(message):
     profile_user(message.from_user.id, 'current_location', loc_from_string)
     profile_user(message.from_user.id, 'provided_location', True)
     location_data = weather.search_locations(loc_from_string)
+
     location_text_data = [
         item for item in [
             location_data[0]['name'],
@@ -63,8 +60,10 @@ def echo_location_message(message):
 
     bot.send_message(
         chat_id=message.chat.id,
-        text=f'Ваше местоположение:\n{", ".join(location_text_data)}\n'
-             f'Выберите дальнейшие действия:',
+        text=GENERIC_PHRASES["tell_location"].format(
+            location=", ".join(location_text_data),
+            nl='\n'
+        ),
         reply_markup=markups.weather_main()
     )
 
@@ -72,15 +71,23 @@ def echo_location_message(message):
 # Handle messages with content_type 'voice', goes after entering a voice msg
 @bot.message_handler(content_types=['voice'])
 def echo_location_message(message):
+    """This function envisages voices message input control"""
     bot.send_message(
         chat_id=message.chat.id,
-        text=f'Голосовые сообщения не принимаются!'
+        text=GENERIC_PHRASES["voice_reject"]
     )
 
 
 # handle everything else
 @bot.message_handler(content_types=['text'], func=lambda message: True)
 def echo_text_message(message):
+    """
+    This function accepts all commands and all text inputs and processes them
+    accordingly. To ensure the multi-user access, all the data is to be stored
+    in their profiles rather than python code variables,
+    so that they have profiles, to which the ACTIVE WINDOW DATA is saved,
+    among other data
+    """
     # instantly log input
     recorder.log_message(message)
 
@@ -92,24 +99,27 @@ def echo_text_message(message):
         return
 
     if interpret(message) == '/authors':
-        bot.send_message(message.chat.id, 'Github моего хозяина:\nhttps://github.com/citysexx')
+        bot.send_message(message.chat.id, GENERIC_PHRASES["github"].format(
+            nl='\n'
+        ))
         return
 
     if interpret(message) == '/real':
         bot.send_photo(message.chat.id,
                        'https://photos.app.goo.gl/4Nx8uEyyqFjf6NCv6',
-                       caption='Вот так я выгляжу, когда не работаю')
+                       caption=GENERIC_PHRASES["caption"])
         return
 
     if interpret(message) == '/main':
-        bot.send_message(message.chat.id, 'Главное меню', reply_markup=markups.main())
+        bot.send_message(message.chat.id, GENERIC_PHRASES["main_menu"], reply_markup=markups.main())
         profile_user(message.from_user.id, 'active_window', '/main')
+        profile_user(message.from_user.id, 'provided_location', False)
         return
 
     if interpret(message) == '/autoloc':
         bot.send_message(
             chat_id=message.chat.id,
-            text='Поделитесь своим местоположением, чтобы продолжить. Нажмите на кнопку ниже:',
+            text=GENERIC_PHRASES["share_loc"],
             reply_markup=markups.location()
         )
         return
@@ -117,7 +127,7 @@ def echo_text_message(message):
     if interpret(message) == '/manualloc':
         bot.send_message(
             chat_id=message.chat.id,
-            text='Введите название города, который хотите найти (кириллицей или латиницей):',
+            text=GENERIC_PHRASES["input_city"],
             reply_markup=markups.to_main_menu()
         )
         profile_user(message.from_user.id, 'active_window', '/manualloc')
@@ -130,17 +140,16 @@ def echo_text_message(message):
         if not existing_location or not provided_location:
             bot.send_message(
                 chat_id=message.chat.id,
-                text='Укажите место, прежде чем запросить погоду:',
+                text=GENERIC_PHRASES["input_ctrl_city"],
                 reply_markup=markups.interactive_help()
             )
         else:
             bot.send_message(
                 chat_id=message.chat.id,
                 text=weather.CurrentWeather(existing_location).__str__(),
-                reply_markup=markups.interactive_help()
+                reply_markup=markups.weather_main()
             )
 
-        profile_user(message.from_user.id, 'provided_location', False)
         return
 
     if interpret(message) == '/forecast':
@@ -151,17 +160,16 @@ def echo_text_message(message):
         if not existing_location or not provided_location:
             bot.send_message(
                 chat_id=message.chat.id,
-                text='Укажите место, прежде чем запросить погоду:',
+                text=GENERIC_PHRASES["input_ctrl_city"],
                 reply_markup=markups.interactive_help()
             )
         else:
             bot.send_message(
                 chat_id=message.chat.id,
-                text='Выберите, на какой период Вам необходим прогноз:',
+                text=GENERIC_PHRASES["forecast_for"],
                 reply_markup=markups.forecast_variants()
             )
         profile_user(message.from_user.id, 'active_window', '/choose_forecast_time')
-        profile_user(message.from_user.id, 'provided_location', False)
         return
 
     # taking into account pure input, we should resist the unnecessary
@@ -177,45 +185,47 @@ def echo_text_message(message):
 
         if location_data:
             for index, result in enumerate(location_data):
-                resulting_string += f'\nРезультат {index + 1}:\n' \
-                                    f'Город: {result["name"]}\n' \
-                                    f'Регион: {result["region"] if result["region"] else "Не указан"}\n' \
-                                    f'Страна: {result["country"]}\n' \
-                                    f'Координаты: {str(result["lat"]) + "," + str(result["lon"])}\n' \
-                                    f'Уникальный номер: {str(result["id"])}\n\n'
+                resulting_string += GENERIC_PHRASES["search_result"].format(
+                    nl='\n',
+                    order=index + 1,
+                    city=result["name"],
+                    region=result["region"] if result["region"] else "Не указан",
+                    country=result["country"],
+                    coord=str(result["lat"]) + "," + str(result["lon"]),
+                    id=result["id"]
+                )
             bot.send_message(
                 chat_id=message.chat.id,
-                text=f'Я нашел следующие совпадения:\n{resulting_string}\n'
-                     f'Выберите, что Вы имели в виду:',
+                text=GENERIC_PHRASES["search_result_all"].format(
+                    nl='\n', search_result=resulting_string
+                ),
                 reply_markup=markups.confirm_city(location_data)
             )
             profile_user(message.from_user.id, 'active_window', '/city_confirmation')
         else:
             bot.send_message(
                 chat_id=message.chat.id,
-                text=f'Я ничего не нашел. Проверьте правильность ввода или '
-                     f'смиритесь с тем, что сторонний ресурс не имеет Вашего города'
+                text=GENERIC_PHRASES["not_found"]
             )
         return
 
     if active_window == '/city_confirmation':
         if message.text == 'Моего города тут нет':
             bot.send_message(chat_id=message.chat.id,
-                             text='Извините, скорее всего Вы либо опечатались, '
-                                  'либо сторонний ресурс не имеет Вашего города. '
-                                  'Но это точно не проблема программиста. Пробуйте снова!',
+                             text=GENERIC_PHRASES["city_not_in_list"],
                              reply_markup=markups.interactive_help())
             profile_user(message.from_user.id, 'active_window', 'None')
             return
 
         if not re.match(r'\b(\d)+\. (.+), (-)?(\d)+\.(-)?(\d+),(-)?(\d)+\.(-)?(\d+)\b', message.text):
-            bot.send_message(message.chat.id, 'А разраб еще и тестировщик. Клава тут не сработает. Используй кнопки')
+            bot.send_message(message.chat.id, GENERIC_PHRASES["tested_prevented"])
             return
 
         bot.send_message(
             chat_id=message.chat.id,
-            text=f'Выбрано место:\n{message.text[3:]}\n'
-                 f'Выберите дальнейшие действия:',
+            text=GENERIC_PHRASES["chosen_place"].format(
+                nl='\n', place=message.text[3:]
+            ),
             reply_markup=markups.weather_main()
         )
         result = weather.search_locations(message.text[3:].split(', ')[-1])
@@ -267,7 +277,7 @@ def echo_text_message(message):
             profile_user(message.from_user.id, 'current_forecast', pickle.dumps(forecast))
             profile_user(message.from_user.id, 'active_window', '/offered_hourly')
             return
-        bot.send_message(message.chat.id, 'А разраб еще и тестировщик. Клава тут не сработает. Используй кнопки')
+        bot.send_message(message.chat.id, GENERIC_PHRASES["tested_prevented"])
 
     if active_window == '/offered_hourly' and \
             re.match(r'\bПочасовой прогноз на \d{4}-\d{2}-\d{2}\b', message.text):
@@ -275,7 +285,7 @@ def echo_text_message(message):
         # fetch what period of day the user wants
         bot.send_message(
             chat_id=message.chat.id,
-            text=f'На какое время суток?',
+            text=GENERIC_PHRASES["choose_daytime"],
             reply_markup=markups.period_wants_hourly_forecast()
         )
 
@@ -307,6 +317,7 @@ def echo_text_message(message):
             profile_user(message.from_user.id, 'desired_forecast_date', 'none')
             profile_user(message.from_user.id, 'current_forecast', 'none')
             profile_user(message.from_user.id, 'active_window', 'none')
+            profile_user(message.from_user.id, 'provided_location', False)
 
             return
 
@@ -319,6 +330,7 @@ def echo_text_message(message):
             profile_user(message.from_user.id, 'desired_forecast_date', 'none')
             profile_user(message.from_user.id, 'current_forecast', 'none')
             profile_user(message.from_user.id, 'active_window', 'none')
+            profile_user(message.from_user.id, 'provided_location', False)
 
             return
 
@@ -331,6 +343,7 @@ def echo_text_message(message):
             profile_user(message.from_user.id, 'desired_forecast_date', 'none')
             profile_user(message.from_user.id, 'current_forecast', 'none')
             profile_user(message.from_user.id, 'active_window', 'none')
+            profile_user(message.from_user.id, 'provided_location', False)
 
             return
 
@@ -343,10 +356,11 @@ def echo_text_message(message):
             profile_user(message.from_user.id, 'desired_forecast_date', 'none')
             profile_user(message.from_user.id, 'current_forecast', 'none')
             profile_user(message.from_user.id, 'active_window', 'none')
+            profile_user(message.from_user.id, 'provided_location', False)
 
             return
 
-        bot.send_message(message.chat.id, 'А разраб еще и тестировщик. Клава тут не сработает. Используй кнопки')
+        bot.send_message(message.chat.id, GENERIC_PHRASES["tested_prevented"])
 
     # check msg for some inputs
     is_any_interaction = feel_msg(message)
@@ -367,6 +381,8 @@ def echo_text_message(message):
 
         return
 
+    bot.send_message(message.chat.id, GENERIC_PHRASES["misunderstanding"])
+
 
 if __name__ == '__main__':
-    raise UserWarning('Bot is to be launched through main.py!')
+    raise UserWarning(GENERIC_PHRASES["dont_launch_here"])
