@@ -4,3 +4,4 @@ src/logs/user_history.log
 .idea
 profiles
 src/logs
+src/.env

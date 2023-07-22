@@ -1,11 +1,11 @@
 from typing import List, AnyStr, Dict
-from os import path, curdir
+from os import path, curdir, getenv
 
 
 # token for telegram api
-TELEGRAM_TOKEN = '6026006509:AAESkijXYtVNtWkElHDalJXD0HV25LLc1Ck'
+TELEGRAM_TOKEN = getenv("TELEGRAM_TOKEN")
 # token for weather api
-WEATHER_TOKEN = 'f46bffc37c7c4747b7681757232106'
+WEATHER_TOKEN = getenv("WEATHER_TOKEN")
 
 # Fix the paths, making it possible to access from all files and dirs
 needed_dir = path.join('utils', 'bot_template_responses')

@@ -187,5 +187,30 @@ def provide_random_phrase(phrase_list: List) -> AnyStr:
     return choice(phrase_list)
 
 
+def mute_env() -> None:
+    """func writes env variables into the .env"""
+    path_to_env = path.join('.', '.env')
+
+    telegram_api_key = input('Enter Telegram API key >>> ')
+    weather_api_key = input('Enter Weather API key >>> ')
+
+    with open(path_to_env, 'w') as env_file:
+        env_file.write(f"TELEGRAM_TOKEN={telegram_api_key}")
+        env_file.write("\n")
+        env_file.write(f"WEATHER_TOKEN={weather_api_key}")
+        env_file.flush()
+
+
+def chenv() -> None:
+    """create an empty .env file if there is none"""
+    path_to_env = path.join('.', '.env')
+
+    if path.exists(path_to_env):
+        return
+
+    with open(path_to_env, 'w') as new_env:
+        new_env.write("TELEGRAM_TOKEN=none\nWEATHER_TOKEN=none\n")
+
+
 if __name__ == '__main__':
     raise UserWarning(f'Not designed as a launcher!!!')
