@@ -1,10 +1,9 @@
-from typing import AnyStr
 import telebot
 from datetime import datetime
 from os import mkdir
 
 
-def log_message(message: ['telebot.types.Message'], additional_string: AnyStr = None) -> None:
+def log_message(message: ['telebot.types.Message']) -> None:
     """
     This function logs history: who, when and what wrote to the bot.
     The recordings depend on a message type.

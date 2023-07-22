@@ -18,7 +18,8 @@ hi_regex = [
     re.compile(r'\bпривет\w?', re.IGNORECASE),
     re.compile(r'\bзд[ао]ров[ао]*\w?', re.IGNORECASE),
     re.compile(r'\bсал[ая]м\b', re.IGNORECASE),
-    re.compile(r'(\bдобрый|доброго|добр(о)?е|доброй) (утро\b|утра\b|ночи\b|вечер\b|вечера\b|дня\b|день\b|времени суток\b)', re.IGNORECASE),
+    re.compile(r'(\bдобрый|доброго|добр(о)?е|доброй) (утро\b|утра\b|ночи\b|'
+               r'вечер\b|вечера\b|дня\b|день\b|времени суток\b)', re.IGNORECASE),
     re.compile(r'\b(з)?дра(вствуйте)|(сьт[ие])|(тути)\b', re.IGNORECASE),
     re.compile(r'\bку(-)?(ку)?\b', re.IGNORECASE),
     re.compile(r'\bшалом\b', re.IGNORECASE),
@@ -41,7 +42,8 @@ help_regex = [
     re.compile(r'\bне\s?(\bмогу\b|\bзнаю\b|\bпонимаю\b|\bпонятно\b|\bпонять\b)\b', re.IGNORECASE),
     re.compile(r'\bкак\b|\bпочему\b|\bгде\b|\bзачем\b', re.IGNORECASE),
     re.compile(r'\bхелп\b|\bhelp\b|\bподдержка\b|\bвопрос\b|\bчаво\b|\bfaq\b', re.IGNORECASE),
-    re.compile(r'(\bпомоги(те)?\b|\bнужно\b|\bнадо\b|\bнеобходимо\b) (\bпонять\b|\bузнать\b|\bразобраться\b|\bнайти\b|\bнаходить\b|\bдайте\b)', re.IGNORECASE),
+    re.compile(r'(\bпомоги(те)?\b|\bнужно\b|\bнадо\b|\bнеобходимо\b) '
+               r'(\bпонять\b|\bузнать\b|\bразобраться\b|\bнайти\b|\bнаходить\b|\bдайте\b)', re.IGNORECASE),
     re.compile(r'\b(есть)? вопрос\b', re.IGNORECASE)
 ]
 

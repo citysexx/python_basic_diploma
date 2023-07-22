@@ -1,5 +1,5 @@
 import telebot
-from typing import Dict, AnyStr, Any, Optional, List
+from typing import Dict, AnyStr, List
 from src.utils.regex import *
 from telebot import types
 import json
@@ -74,21 +74,24 @@ def interpret(message: ['types.Message']) -> AnyStr:
         return '/forecast'
 
 
-def profile_user(tg_user_id: int,
-                 key: AnyStr,
-                 new_val: Optional[Any] = None, *,
-                 load_only: bool = False,
-                 tg_user_name: Optional[AnyStr] = None,
-                 tg_user_surname: Optional[AnyStr] = None) -> Dict or None:
+def profile_user(*,
+                 tg_user_id: int,
+                 **kwargs) -> Dict or None:
     """
     This function refers to the work on the project and database structure and
     is meant to accomplish several tasks in frames of database management:
-    i) create a json file for the user (if not exists)
-    ii) deserialize it
-    iii) change an attribute of this json (attribute name is passed as an argument)
-    iv) the new value of the attribute (new value should be passed into
-    the function too)
-    v) serialize and save it
+
+    SAVE INFO:
+        i) create a json file for the user (if not exists)
+        ii) deserialize it
+        iii) add attributes of this json if none
+        iv) the new value of each attribute
+        v) serialize and save it
+
+    LOAD INFO:
+        i) create a json file for the user (if not exists)
+        ii) deserialize it
+        iii) return a dict with the needed keys and values
 
     By short, this function works with the user's config. The func will be
     needed in several cases and different attributes are to be edited,
@@ -96,12 +99,22 @@ def profile_user(tg_user_id: int,
 
     Attributes:
         :param tg_user_id: int number defining a current user who wrote the msg
-        :param key: an attribute to change
-        :param new_val: a new value to set
-        :param load_only: a bool value defining if it's needed to load or save json
-        :param tg_user_name: Optional. Name of the user if we need it
-        :param tg_user_surname: Optional. Surname of the user if we need it
+        :param kwargs: keys and values to load/save
     """
+    # check what the function has been called for (SAVE OR LOAD).
+    # We go in kwargs and check if all values are load OR all values NOT load.
+    # Otherwise, we raise exception, because it is irrational to use profiling
+    # both for load and save simultaneously
+    all_loads = all([val == "!load!" for val in kwargs.values()])
+    all_saves = all([val != "!load!" for val in kwargs.values()])
+
+    if not all_loads and not all_saves:
+        raise NotImplementedError('You cannot use this function for load '
+                                  'and save purposes simultaneously!')
+
+    # define func mode. 'l' for load and 's' for save.
+    mode = 'l' if all_loads else 's'
+
     if not path.exists(path.join('profiles')):
         mkdir(path.join('profiles'))
     path_to_config = path.join('profiles', f'{tg_user_id}.json')
@@ -119,26 +132,22 @@ def profile_user(tg_user_id: int,
         except json.decoder.JSONDecodeError:
             profile_data = {
                 'userid': tg_user_id,
-                'username': tg_user_name if tg_user_name else "unknown",
-                'usersecondname': tg_user_surname if tg_user_surname else "unknown"
+                'username': kwargs["username"] if kwargs["username"] else "unknown",
+                'usersecondname': kwargs["usersecondname"] if kwargs["usersecondname"] else "unknown"
             }
         profile.flush()
 
-    # then we check the flag load_only which tells what to do with the file,
-    # load only or write (write by default)
-    if load_only:
-        try:
-            fetched_data = profile_data[key]
-        except KeyError:
-            return None
-        else:
-            return fetched_data
+    # if we load, we return the dict with the needed info for further work
+    if mode == 'l':
+        return {key: profile_data[key] for key in kwargs.keys()}
 
-    # sometimes we receive bytes, non-serializable to JSON item, here is the fix
-    if isinstance(new_val, bytes):
-        new_val = str(new_val)
-
-    profile_data[key] = new_val
+    # go work with the profile data if we need to save it
+    for key, val in kwargs.items():
+        # sometimes we receive bytes, non-serializable to JSON item, here is the fix
+        if isinstance(val, bytes):
+            profile_data[key] = str(val)
+            continue
+        profile_data[key] = val
 
     with open(path_to_config, 'w', encoding='utf-8') as profile_dump:
         json.dump(profile_data, profile_dump, indent=4)

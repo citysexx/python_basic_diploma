@@ -20,10 +20,7 @@ def send_welcome(message):
     recorder.log_message(message)
     profile_user(
         tg_user_id=message.from_user.id,
-        tg_user_name=message.from_user.first_name,
-        tg_user_surname=message.from_user.last_name,
-        key='registered',
-        new_val='true'
+        registered="true"
     )
 
     bot.send_message(
@@ -45,8 +42,11 @@ def echo_location_message(message):
 
     # handle json config for this user and, for this particular case, we mute
     # current location logs
-    profile_user(message.from_user.id, 'current_location', loc_from_string)
-    profile_user(message.from_user.id, 'provided_location', True)
+    profile_user(
+        tg_user_id=message.from_user.id,
+        current_location=loc_from_string,
+        provided_location=True
+    )
     location_data = weather.search_locations(loc_from_string)
 
     location_text_data = [
@@ -92,7 +92,26 @@ def echo_text_message(message):
     recorder.log_message(message)
 
     # init an active window (bot should know where the user is)
-    active_window = profile_user(message.from_user.id, 'active_window', load_only=True)
+    loaded_data = profile_user(
+        tg_user_id=message.from_user.id,
+        active_window="!load!",
+        current_location="!load!",
+        provided_location="!load!",
+        desired_forecast_date="!load!",
+        current_forecast="!load!"
+    )
+
+    active_window = loaded_data["active_window"]
+    existing_location = loaded_data["current_location"]
+    provided_location = loaded_data["provided_location"]
+    desired_date = loaded_data["desired_forecast_date"]
+    forecast_loads = loaded_data["current_forecast"]
+    forecast: ['weather.ForecastWeather'] or ['None'] = None
+
+    if forecast_loads != 'none':
+        forecast: ['weather.ForecastWeather'] = pickle.loads(
+            eval(loaded_data["current_forecast"])
+        )
 
     if interpret(message) == '/help':
         bot.send_message(message.chat.id, GUIDE, reply_markup=markups.interactive_help())
@@ -112,8 +131,11 @@ def echo_text_message(message):
 
     if interpret(message) == '/main':
         bot.send_message(message.chat.id, GENERIC_PHRASES["main_menu"], reply_markup=markups.main())
-        profile_user(message.from_user.id, 'active_window', '/main')
-        profile_user(message.from_user.id, 'provided_location', False)
+        profile_user(
+            tg_user_id=message.from_user.id,
+            active_window='/main',
+            provided_location=False
+        )
         return
 
     if interpret(message) == '/autoloc':
@@ -130,12 +152,10 @@ def echo_text_message(message):
             text=GENERIC_PHRASES["input_city"],
             reply_markup=markups.to_main_menu()
         )
-        profile_user(message.from_user.id, 'active_window', '/manualloc')
+        profile_user(tg_user_id=message.from_user.id, active_window='/manualloc')
         return
 
     if interpret(message) == '/now':
-        existing_location = profile_user(message.from_user.id, 'current_location', load_only=True)
-        provided_location = profile_user(message.from_user.id, 'provided_location', load_only=True)
 
         if not existing_location or not provided_location:
             bot.send_message(
@@ -154,9 +174,6 @@ def echo_text_message(message):
 
     if interpret(message) == '/forecast':
 
-        existing_location = profile_user(message.from_user.id, 'current_location', load_only=True)
-        provided_location = profile_user(message.from_user.id, 'provided_location', load_only=True)
-
         if not existing_location or not provided_location:
             bot.send_message(
                 chat_id=message.chat.id,
@@ -169,7 +186,7 @@ def echo_text_message(message):
                 text=GENERIC_PHRASES["forecast_for"],
                 reply_markup=markups.forecast_variants()
             )
-        profile_user(message.from_user.id, 'active_window', '/choose_forecast_time')
+        profile_user(tg_user_id=message.from_user.id, active_window='/choose_forecast_time')
         return
 
     # taking into account pure input, we should resist the unnecessary
@@ -201,7 +218,7 @@ def echo_text_message(message):
                 ),
                 reply_markup=markups.confirm_city(location_data)
             )
-            profile_user(message.from_user.id, 'active_window', '/city_confirmation')
+            profile_user(tg_user_id=message.from_user.id, active_window='/city_confirmation')
         else:
             bot.send_message(
                 chat_id=message.chat.id,
@@ -214,7 +231,7 @@ def echo_text_message(message):
             bot.send_message(chat_id=message.chat.id,
                              text=GENERIC_PHRASES["city_not_in_list"],
                              reply_markup=markups.interactive_help())
-            profile_user(message.from_user.id, 'active_window', 'None')
+            profile_user(tg_user_id=message.from_user.id, active_window='None')
             return
 
         if not re.match(r'\b(\d)+\. (.+), (-)?(\d)+\.(-)?(\d+),(-)?(\d)+\.(-)?(\d+)\b', message.text):
@@ -229,18 +246,18 @@ def echo_text_message(message):
             reply_markup=markups.weather_main()
         )
         result = weather.search_locations(message.text[3:].split(', ')[-1])
-        profile_user(message.from_user.id,
-                     'current_location',
-                     f'{str(result[0]["lat"]) + "," + str(result[0]["lon"])}'
-                     )
-        profile_user(message.from_user.id, 'provided_location', True)
-        profile_user(message.from_user.id, 'active_window', 'None')
+        profile_user(
+            tg_user_id=message.from_user.id,
+            current_location=f'{str(result[0]["lat"]) + "," + str(result[0]["lon"])}',
+            provided_location=True,
+            active_window='None'
+        )
+        return
 
     if active_window == '/choose_forecast_time':
-        current_loc = profile_user(message.from_user.id, 'current_location', load_only=True)
 
         if message.text == 'На сегодня':
-            forecast = weather.ForecastWeather(geo=current_loc, number_of_days=1, moment="today")
+            forecast = weather.ForecastWeather(geo=existing_location, number_of_days=1, moment="today")
             bot.send_message(
                 chat_id=message.chat.id,
                 text=f'{forecast.__str__()}',
@@ -250,32 +267,41 @@ def echo_text_message(message):
             # json to further use in the weather provision in OTHER functions
             # that do not cross the scope with each other.
             # Actual for the conditions below as well
-            profile_user(message.from_user.id, 'current_forecast', pickle.dumps(forecast))
-            profile_user(message.from_user.id, 'active_window', '/offered_hourly')
+            profile_user(
+                tg_user_id=message.from_user.id,
+                current_forecast=pickle.dumps(forecast),
+                active_window='/offered_hourly'
+            )
             return
 
         if message.text == 'На завтра':
-            forecast = weather.ForecastWeather(geo=current_loc, number_of_days=2, moment="tomorrow")
+            forecast = weather.ForecastWeather(geo=existing_location, number_of_days=2, moment="tomorrow")
             bot.send_message(
                 chat_id=message.chat.id,
                 text=f'{forecast.__str__()}',
                 reply_markup=markups.if_wants_hourly_forecast(forecast)
             )
 
-            profile_user(message.from_user.id, 'current_forecast', pickle.dumps(forecast))
-            profile_user(message.from_user.id, 'active_window', '/offered_hourly')
+            profile_user(
+                tg_user_id=message.from_user.id,
+                current_forecast=pickle.dumps(forecast),
+                active_window='/offered_hourly'
+            )
             return
 
         if message.text == 'На три дня':
-            forecast = weather.ForecastWeather(geo=current_loc, number_of_days=3, moment="three_days")
+            forecast = weather.ForecastWeather(geo=existing_location, number_of_days=3, moment="three_days")
             bot.send_message(
                 chat_id=message.chat.id,
                 text=f'{forecast.__str__()}',
                 reply_markup=markups.if_wants_hourly_forecast(forecast)
             )
 
-            profile_user(message.from_user.id, 'current_forecast', pickle.dumps(forecast))
-            profile_user(message.from_user.id, 'active_window', '/offered_hourly')
+            profile_user(
+                tg_user_id=message.from_user.id,
+                current_forecast=pickle.dumps(forecast),
+                active_window='/offered_hourly'
+            )
             return
         bot.send_message(message.chat.id, GENERIC_PHRASES["tested_prevented"])
 
@@ -288,17 +314,14 @@ def echo_text_message(message):
             text=GENERIC_PHRASES["choose_daytime"],
             reply_markup=markups.period_wants_hourly_forecast()
         )
-
-        profile_user(message.from_user.id, 'active_window', '/enter_period')
-        profile_user(message.from_user.id, 'desired_forecast_date', message.text.split()[3])
+        profile_user(
+            tg_user_id=message.from_user.id,
+            active_window='/enter_period',
+            desired_forecast_date=message.text.split()[3]
+        )
+        return
 
     if active_window == '/enter_period':
-        # deserialize the class ForecastWeather from the json file
-        forecast: ['weather.ForecastWeather'] = pickle.loads(
-            eval(profile_user(message.from_user.id, 'current_forecast', load_only=True))
-        )
-        # take the remembered date from the user
-        desired_date = profile_user(message.from_user.id, 'desired_forecast_date', load_only=True)
 
         # find the needed day in the forecast
         for daily_forecast in forecast.daily_forecasts:
@@ -314,11 +337,13 @@ def echo_text_message(message):
                 text=f'{needed_forecast_inst.give_hourly_forecast(period=range(6,13))}',
                 reply_markup=markups.interactive_help()
             )
-            profile_user(message.from_user.id, 'desired_forecast_date', 'none')
-            profile_user(message.from_user.id, 'current_forecast', 'none')
-            profile_user(message.from_user.id, 'active_window', 'none')
-            profile_user(message.from_user.id, 'provided_location', False)
-
+            profile_user(
+                tg_user_id=message.from_user.id,
+                desired_forecast_date='none',
+                current_forecast='none',
+                active_window='none',
+                provided_location=False
+            )
             return
 
         if message.text == 'На день (12-18 часов)':
@@ -327,11 +352,13 @@ def echo_text_message(message):
                 text=f'{needed_forecast_inst.give_hourly_forecast(period=range(12, 19))}',
                 reply_markup=markups.interactive_help()
             )
-            profile_user(message.from_user.id, 'desired_forecast_date', 'none')
-            profile_user(message.from_user.id, 'current_forecast', 'none')
-            profile_user(message.from_user.id, 'active_window', 'none')
-            profile_user(message.from_user.id, 'provided_location', False)
-
+            profile_user(
+                tg_user_id=message.from_user.id,
+                desired_forecast_date='none',
+                current_forecast='none',
+                active_window='none',
+                provided_location=False
+            )
             return
 
         if message.text == 'На вечер (18-24 часа)':
@@ -340,11 +367,13 @@ def echo_text_message(message):
                 text=f'{needed_forecast_inst.give_hourly_forecast(period=range(18, 24))}',
                 reply_markup=markups.interactive_help()
             )
-            profile_user(message.from_user.id, 'desired_forecast_date', 'none')
-            profile_user(message.from_user.id, 'current_forecast', 'none')
-            profile_user(message.from_user.id, 'active_window', 'none')
-            profile_user(message.from_user.id, 'provided_location', False)
-
+            profile_user(
+                tg_user_id=message.from_user.id,
+                desired_forecast_date='none',
+                current_forecast='none',
+                active_window='none',
+                provided_location=False
+            )
             return
 
         if message.text == 'На ночь (0-6 часов)':
@@ -353,11 +382,13 @@ def echo_text_message(message):
                 text=f'{needed_forecast_inst.give_hourly_forecast(period=range(0, 7))}',
                 reply_markup=markups.interactive_help()
             )
-            profile_user(message.from_user.id, 'desired_forecast_date', 'none')
-            profile_user(message.from_user.id, 'current_forecast', 'none')
-            profile_user(message.from_user.id, 'active_window', 'none')
-            profile_user(message.from_user.id, 'provided_location', False)
-
+            profile_user(
+                tg_user_id=message.from_user.id,
+                desired_forecast_date='none',
+                current_forecast='none',
+                active_window='none',
+                provided_location=False
+            )
             return
 
         bot.send_message(message.chat.id, GENERIC_PHRASES["tested_prevented"])
