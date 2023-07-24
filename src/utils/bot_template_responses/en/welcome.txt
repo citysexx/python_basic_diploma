@@ -6,8 +6,6 @@ Up to 300000 cities and towns of the world are available! They can be found in t
 
 Please note that some less popular places are not located, and sometimes the location can give you not your city, but its suburbs or neighborhood. These problems are not my problem, this is on the part of the creators of the weather resource that I used here.
 
-The bot will subscribe you at your request to the newsletter, which you can customize yourself. This newsletter is not advertising, but weather forecasts and storm warnings from government agencies (it does not work everywhere and not always).
-
 The bot is able to respond to elementary expressions entered by you from the keyboard. He recognizes when you need help, when you greet him, thank him, say goodbye to him. My bot is polite and tactful. However, he does not accept swear words and will answer you fairly.
 
 The bot ignores anything that is not relevant to what is listed above in the previous paragraph.
