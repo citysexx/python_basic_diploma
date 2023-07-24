@@ -4,6 +4,7 @@ import swagger_client
 import ast
 from src.configs.config import OPENING_PHRASES, WEATHER_TOKEN
 from src.utils.funcs import decode_western_time_format, provide_random_phrase
+from translate import Translator
 # не трогать дейттайм! Хоть он типа и не используется, но он нужен для АПИ прогноза
 import datetime
 
@@ -23,10 +24,11 @@ class CurrentWeather:
     pythonic enough to represent in code
     """
 
-    def __init__(self, geo: AnyStr) -> None:
+    def __init__(self, geo: AnyStr, language: AnyStr) -> None:
         # request current weather
-        api_inline_response = api_instance.realtime_weather(geo, lang='ru')
+        api_inline_response = api_instance.realtime_weather(geo, lang=language)
         data = ast.literal_eval(str(api_inline_response))
+        self.__lang = language
 
         # main
         self.__current = data['current']
@@ -61,7 +63,7 @@ class CurrentWeather:
 
     def __str__(self) -> AnyStr:
         """describe current weather for user"""
-        string = f'"{provide_random_phrase(OPENING_PHRASES)}"\n' \
+        string = f'"{provide_random_phrase(OPENING_PHRASES[self.__lang])}"\n' \
                  f'Погода сейчас:\n\n' \
                  f'Населенный пункт: {self.city}\nСтрана: {self.country}\nУсловия: {self.condition}.\n' \
                  f'Температура воздуха: {self.temp}°C\n' \
@@ -76,6 +78,10 @@ class CurrentWeather:
                  f'Информация обновлена в {self.updated_time}\n' \
                  f'Местное время: {self.local_time}\n' \
                  f'Зона: {self.time_zone_region}.'
+
+        if self.__lang == 'en':
+            return Translator(from_lang='ru', to_lang="en").translate(string)
+
         return string
 
     @property
@@ -190,12 +196,13 @@ class ForecastWeather:
     This class stores logs about the forecast weather for the given time period
     """
 
-    def __init__(self, geo: AnyStr, number_of_days: int, moment: AnyStr) -> None:
+    def __init__(self, geo: AnyStr, number_of_days: int, moment: AnyStr, language: AnyStr) -> None:
 
         # make a weather API request to forecast
-        api_inline_response = api_instance.forecast_weather(geo, number_of_days, lang='ru')
+        api_inline_response = api_instance.forecast_weather(geo, number_of_days, lang=language)
         data = eval(str(api_inline_response))
         self.__moment = moment
+        self.__lang = language
 
         # city location text info
         self.__name = data["location"]["name"]
@@ -205,14 +212,18 @@ class ForecastWeather:
         # take the necessary information only out of the result (logs) below:
         # init the forecast logs
         self.__forecast_days = [
-            ForecastDay(item) for item in data["forecast"]["forecastday"]
+            ForecastDay(item, self.__lang) for item in data["forecast"]["forecastday"]
         ]
 
     def __str__(self) -> AnyStr:
-        open_phr = f'"{provide_random_phrase(OPENING_PHRASES)}"'
+        open_phr = f'"{provide_random_phrase(OPENING_PHRASES[self.__lang])}"'
         loc_description = f'Населенный пункт: {self.name}\n' \
                           f'Страна: {self.country}\n' \
                           f'Местное время: {self.localtime}'
+
+        if self.__lang == 'en':
+            loc_description = Translator(from_lang='ru', to_lang="en").translate(loc_description)
+
         report = ''
 
         for index, forecast_day in enumerate(self.__forecast_days):
@@ -250,7 +261,7 @@ class ForecastDay:
     This class is solely for the usage inside a Forecast class.
     This describes weather within a day only
     """
-    def __init__(self, day_cover: Dict):
+    def __init__(self, day_cover: Dict, language: AnyStr):
         """
         Initializes the forecast for a single day
         Args:
@@ -259,6 +270,7 @@ class ForecastDay:
         """
         self.__day_report = day_cover
         self.__date = day_cover["_date"]
+        self.__lang = language
 
         # temperature
         self.__maximum_temp = day_cover["day"]["maxtemp_c"]
@@ -298,7 +310,7 @@ class ForecastDay:
 
         # an hourly weather for the given day
         self.__hourly_forecasts = [
-            HourlyForecast(data_for_hour)
+            HourlyForecast(data_for_hour, self.__lang)
             for data_for_hour in day_cover["hour"]
         ]
 
@@ -308,23 +320,28 @@ class ForecastDay:
         Returns:
             string report
         """
-        return f'============\nПрогноз на {self.date}:\n' \
-               f'{self.condition}.\n' \
-               f'Максимальная температура: {self.max_temp}°C\n' \
-               f'Минимальная температура: {self.min_temp}°C\n' \
-               f'Ожидается в среднем за день: {self.avg_temp}°C\n' \
-               f'Ветер усилится до {self.max_wind} км/ч,\n' \
-               f'Ожидаемое количество осадков: {self.precipitation} мм\n' \
-               f'Средняя видимость: {self.avg_visibility} км\n' \
-               f'Средняя влажность воздуха: {self.avg_humidity}%\n' \
-               f'Будет ли дождь: {"ДА" if int(self.is_rain) else "НЕТ"}\n' \
-               f'Вероятность дождя: {self.rain_probability}%\n' \
-               f'Будет ли снег: {"ДА" if int(self.is_snow) else "НЕТ"}\n' \
-               f'Вероятность снега: {self.snow_probability}%\n' \
-               f'Индекс УФ излучения: {self.uv}\n' \
-               f'Восход: {self.when_sunrise}\n' \
-               f'Закат: {self.when_sunset}\n' \
-               f'Время местное.\n============\n'
+        string = f'============\nПрогноз на {self.date}:\n' \
+                 f'{self.condition}.\n' \
+                 f'Максимальная температура: {self.max_temp}°C\n' \
+                 f'Минимальная температура: {self.min_temp}°C\n' \
+                 f'Ожидается в среднем за день: {self.avg_temp}°C\n' \
+                 f'Ветер усилится до {self.max_wind} км/ч,\n' \
+                 f'Ожидаемое количество осадков: {self.precipitation} мм\n' \
+                 f'Средняя видимость: {self.avg_visibility} км\n' \
+                 f'Средняя влажность воздуха: {self.avg_humidity}%\n' \
+                 f'Будет ли дождь: {"ДА" if int(self.is_rain) else "НЕТ"}\n' \
+                 f'Вероятность дождя: {self.rain_probability}%\n' \
+                 f'Будет ли снег: {"ДА" if int(self.is_snow) else "НЕТ"}\n' \
+                 f'Вероятность снега: {self.snow_probability}%\n' \
+                 f'Индекс УФ излучения: {self.uv}\n' \
+                 f'Восход: {self.when_sunrise}\n' \
+                 f'Закат: {self.when_sunset}\n' \
+                 f'Время местное.\n============\n'
+
+        if self.__lang == 'en':
+            return Translator(from_lang='ru', to_lang="en").translate(string)
+
+        return string
 
     @property
     def date(self) -> Any:
@@ -384,10 +401,14 @@ class ForecastDay:
 
     @property
     def when_sunrise(self) -> Any:
+        if self.__lang == 'en':
+            return self.__sunrise_time
         return decode_western_time_format(self.__sunrise_time)
 
     @property
     def when_sunset(self) -> Any:
+        if self.__lang == 'en':
+            return self.__sunset_time
         return decode_western_time_format(self.__sunset_time)
 
     def give_hourly_forecast(self, *, period: ['range']) -> AnyStr:
@@ -418,7 +439,9 @@ class HourlyForecast:
     There will not be any __str__() method because it will not be used in other
     classes but the info will be returned depending on the range of hours you set
     """
-    def __init__(self, data: Dict):
+    def __init__(self, data: Dict, language: AnyStr):
+        # language
+        self.__lang = language
 
         # time
         self.__time = data["time"]
@@ -471,15 +494,20 @@ class HourlyForecast:
         return self.__feels_like
 
     def __str__(self) -> AnyStr:
-        return f'============\nНа {self.time.split()[1]}\n' \
-               f'{self.condition}.\n' \
-               f'Температура воздуха: {self.temperature}°C\n' \
-               f'Ощущается как: {self.feels}°C\n' \
-               f'Скорость ветра: {self.wind} км/ч\n' \
-               f'Порывы до: {self.gust} км/ч\n' \
-               f'Шанс дождя: {self.rain_chance}\n' \
-               f'Шанс снега: {self.snow_chance}\n' \
-               f'============\n\n'
+        string = f'============\nНа {self.time.split()[1]}\n' \
+                 f'{self.condition}.\n' \
+                 f'Температура воздуха: {self.temperature}°C\n' \
+                 f'Ощущается как: {self.feels}°C\n' \
+                 f'Скорость ветра: {self.wind} км/ч\n' \
+                 f'Порывы до: {self.gust} км/ч\n' \
+                 f'Шанс дождя: {self.rain_chance}\n' \
+                 f'Шанс снега: {self.snow_chance}\n' \
+                 f'============\n\n'
+
+        if self.__lang == 'en':
+            return Translator(from_lang='ru', to_lang="en").translate(string)
+
+        return string
 
 
 def search_locations(data: AnyStr) -> List or None:
@@ -504,10 +532,10 @@ def search_locations(data: AnyStr) -> List or None:
 
 if __name__ == '__main__':
     # showcase current weather
-    current_weather = CurrentWeather('Vladivostok')
+    current_weather = CurrentWeather('Vladivostok', language='ru')
     print(current_weather)
     # showcase forecast
-    forecast_weather = ForecastWeather(geo='Vladivostok', number_of_days=1, moment='today')
+    forecast_weather = ForecastWeather(geo='Vladivostok', number_of_days=1, moment='today', language='ru')
     print(forecast_weather)
     # showcase forecast hourly
     print(forecast_weather.daily_forecasts[0].give_hourly_forecast(period=range(0, 7)))

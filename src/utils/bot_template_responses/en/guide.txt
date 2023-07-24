@@ -1,0 +1,14 @@
+Commands:
+/help - calls this window
+/lang - language selection
+/autoloc - enter this if you want weather in your geolocation
+/manualloc - enter this if you want weather somewhere else other than your location
+/main - back to the main menu
+/real - be acquainted with me, see how I look like
+/authors - credits
+/now - know current weather
+/forecast - know forecast
+
+Enter any text message and the bot will accept your gratitude, welcoming, farewell, ask for help. Bad words are not welcomed. Anything else you will say bot will ignore and reply to you with a corresponding message.
+
+Use the buttons if you do not want to enter commands: bot will interpret them as commands anyway. Some commands are not in list, as they are for internal use only.

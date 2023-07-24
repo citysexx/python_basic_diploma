@@ -1,0 +1,18 @@
+tell_location><Your location:{nl}{location}.{nl}Decide next actions:
+voice_reject><Voice messages are unacceptable!
+github><My owner's Github:{nl}https://github.com/citysexx
+caption><This is me when I'm not working:
+main_menu><Main menu
+share_loc><Share your location with us to continue. Press the button below:
+input_city><Enter the city you would like to find:
+input_ctrl_city><You should mention the place before requesting the weather:
+forecast_for><Choose the desired period of forecast:
+search_result><{nl}Result {order}:{nl}City: {city}{nl}Region: {region}{nl}Country: {country}{nl}Coordinates: {coord}{nl}Unique ID: {id}{nl}{nl}
+search_result_all><I have found the following matches:{nl}{search_result}{nl}Pick the one you meant to find:
+not_found><I have found nothing. Check your input. Note that some places cannot be in the database.
+city_not_in_list><Sorry, you seem to have mistyped the request or this place just does not exist. Sorry.
+tested_prevented><You see, the developer is also a tester, so he envisaged that you may check the input in the incorrect places. The keyboard is disabled here. Use buttons!
+chosen_place><Place chosen:{nl}{place}{nl}Decide next actions:
+choose_daytime><Choose daytime:
+dont_launch_here><Bot is to be launched through main.py!
+misunderstanding><Apparently, if you wanted to enter something, e.g. the name of a city, you are on the wrong menu. Well, otherwise, I was not programmed by the creator to answer this. Follow the buttons, please.

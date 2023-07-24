@@ -1,5 +1,4 @@
 import telebot
-from typing import Dict, AnyStr, List
 from src.utils.regex import *
 from telebot import types
 import json
@@ -7,13 +6,18 @@ from os import path, mkdir
 from random import choice
 
 
-def feel_msg(user_input: ['telebot.types.Message']) -> Dict[AnyStr, bool]:
+inputs_en: Dict[AnyStr, AnyStr] = json.load(open(path.join('.', 'gui/buttons.json'), 'r', encoding='utf-8'))["en"]
+inputs_ru: Dict[AnyStr, AnyStr] = json.load(open(path.join('.', 'gui/buttons.json'), 'r', encoding='utf-8'))["ru"]
+
+
+def feel_msg(user_input: ['telebot.types.Message'], language: AnyStr) -> Dict[AnyStr, bool]:
     """
     This function accepts the user's message from telegram and defines the
     intention of message using regex.
 
     Args:
         user_input: a telebot Message object that the user enters
+        language: a language to feel
 
     Returns:
         A string that defines the user's intention of message he writes
@@ -24,26 +28,26 @@ def feel_msg(user_input: ['telebot.types.Message']) -> Dict[AnyStr, bool]:
 
     # negative flags dict
     flags: Dict[AnyStr, bool] = {
-        "help": False,
         "hi": False,
-        "bye": False,
         "curse": False,
-        "thx": False
+        "help": False,
+        "thx": False,
+        "bye": False
     }
 
     # compare the regex and the string. If the msg somehow corresponds the regex,
     # the flag in dict will be set True.
     # I planned the program should take flags and prepare a string here to answer
 
-    if any([re.search(help_single_regex, string) for help_single_regex in help_regex]):
+    if any([re.search(help_single_regex, string) for help_single_regex in help_regex[language]]):
         flags["help"] = True
-    if any([re.search(hi_single_regex, string) for hi_single_regex in hi_regex]):
+    if any([re.search(hi_single_regex, string) for hi_single_regex in hi_regex[language]]):
         flags["hi"] = True
-    if any([re.search(bye_single_regex, string) for bye_single_regex in bye_regex]):
+    if any([re.search(bye_single_regex, string) for bye_single_regex in bye_regex[language]]):
         flags["bye"] = True
-    if any([re.search(curse_single_regex, string) for curse_single_regex in curse_regex]):
+    if any([re.search(curse_single_regex, string) for curse_single_regex in curse_regex[language]]):
         flags["curse"] = True
-    if any([re.search(thx_single_regex, string) for thx_single_regex in thanks_regex]):
+    if any([re.search(thx_single_regex, string) for thx_single_regex in thanks_regex[language]]):
         flags["thx"] = True
 
     return flags
@@ -56,21 +60,21 @@ def interpret(message: ['types.Message']) -> AnyStr:
     """
     pure_str = message.text
 
-    if pure_str == "❓️ Какие команды ты можешь выполнять?" or pure_str == '/help':
+    if pure_str in [inputs_en["guide"], inputs_ru["guide"]] or pure_str == '/help':
         return '/help'
-    if pure_str == "👨‍💻️ Где твой хозяин, кто тебя создал?" or pure_str == '/authors':
+    if pure_str in [inputs_en["authors"], inputs_ru["authors"]] or pure_str == '/authors':
         return '/authors'
-    if pure_str == "🖼️ Как ты выглядишь в реальной жизни?" or pure_str == '/real':
+    if pure_str in [inputs_en["real"], inputs_ru["real"]] or pure_str == '/real':
         return '/real'
-    if pure_str == '👈️ Вернуться в главное меню' or pure_str == '/main':
+    if pure_str in [inputs_en["to_main"], inputs_ru["to_main"]] or pure_str == '/main':
         return '/main'
-    if pure_str == '🧭️ Искать по моему местоположению' or pure_str == '/autoloc':
+    if pure_str in [inputs_en["autoloc"], inputs_ru["autoloc"]] or pure_str == '/autoloc':
         return '/autoloc'
-    if pure_str == '🔍️ Искать другой город' or pure_str == '/manualloc':
+    if pure_str in [inputs_en["manual_loc"], inputs_ru["manual_loc"]] or pure_str == '/manualloc':
         return '/manualloc'
-    if pure_str == '⚡️ Погода прямо сейчас' or pure_str == '/now':
+    if pure_str in [inputs_en["weather_now"], inputs_ru["weather_now"]] or pure_str == '/now':
         return '/now'
-    if pure_str == '⌚️ Прогноз погоды' or pure_str == '/forecast':
+    if pure_str in [inputs_en["forecast"], inputs_ru["forecast"]] or pure_str == '/forecast':
         return '/forecast'
 
 

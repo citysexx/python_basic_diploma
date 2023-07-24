@@ -1,21 +1,27 @@
 from typing import List
 from telebot import types
 from src.bin import weather
+from src.utils.funcs import profile_user
+import json
 
 
-def main() -> ['types.ReplyKeyboardMarkup']:
+buttons = json.load(open('gui/buttons.json', 'r', encoding='utf-8'))
+
+
+def main(user_id: int) -> ['types.ReplyKeyboardMarkup']:
     """
     This is a function that calls a main menu.
     It returns a telebot markup object with buttons. All the markup
     functionality has been decided to take part in a separate file
     because some of them are used more than once
     """
+    language = profile_user(tg_user_id=user_id, language="!load!")["language"]
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-    help_btn = types.KeyboardButton("❓️ Какие команды ты можешь выполнять?")
-    auto_location_btn = types.KeyboardButton('🧭️ Искать по моему местоположению')
-    manual_location_btn = types.KeyboardButton('🔍️ Искать другой город')
-    owner_btn = types.KeyboardButton("👨‍💻️ Где твой хозяин, кто тебя создал?")
-    cat_real_look_btn = types.KeyboardButton("🖼️ Как ты выглядишь в реальной жизни?")
+    help_btn = types.KeyboardButton(buttons[language]["guide"])
+    auto_location_btn = types.KeyboardButton(buttons[language]["autoloc"])
+    manual_location_btn = types.KeyboardButton(buttons[language]["manual_loc"])
+    owner_btn = types.KeyboardButton(buttons[language]["authors"])
+    cat_real_look_btn = types.KeyboardButton(buttons[language]["real"])
 
     markup.add(
         help_btn,
@@ -28,10 +34,11 @@ def main() -> ['types.ReplyKeyboardMarkup']:
     return markup
 
 
-def location() -> ['types.ReplyKeyboardMarkup']:
+def location(user_id: int) -> ['types.ReplyKeyboardMarkup']:
     """
     This function shows up a menu to user that asks for the location
     """
+    language = profile_user(tg_user_id=user_id, language="!load!")["language"]
     markup = types.ReplyKeyboardMarkup(
         is_persistent=False,
         one_time_keyboard=False,
@@ -39,30 +46,31 @@ def location() -> ['types.ReplyKeyboardMarkup']:
     )
 
     location_btn = types.KeyboardButton(
-        text="📍️ Поделиться своей геопозицией",
+        text=buttons[language]["share_geo"],
         request_location=True
     )
 
-    main_menu_btn = types.KeyboardButton('👈️ Вернуться в главное меню')
+    main_menu_btn = types.KeyboardButton(buttons[language]["to_main"])
     markup.add(location_btn, main_menu_btn)
 
     return markup
 
 
-def weather_main() -> ['types.ReplyKeyboardMarkup']:
+def weather_main(user_id: int) -> ['types.ReplyKeyboardMarkup']:
     """
     This function opens a menu where the user is offered to choose for when
     he wants to get a forecast (for now or future)
     """
+    language = profile_user(tg_user_id=user_id, language="!load!")["language"]
     markup = types.ReplyKeyboardMarkup(
         is_persistent=False,
         one_time_keyboard=False,
         resize_keyboard=True,
         row_width=1
     )
-    current_weather_btn = types.KeyboardButton('⚡️ Погода прямо сейчас')
-    forecast_weather_btn = types.KeyboardButton('⌚️ Прогноз погоды')
-    main_menu_btn = types.KeyboardButton('👈️ Вернуться в главное меню')
+    current_weather_btn = types.KeyboardButton(buttons[language]["weather_now"])
+    forecast_weather_btn = types.KeyboardButton(buttons[language]["forecast"])
+    main_menu_btn = types.KeyboardButton(buttons[language]["to_main"])
 
     markup.add(
         current_weather_btn,
@@ -73,12 +81,13 @@ def weather_main() -> ['types.ReplyKeyboardMarkup']:
     return markup
 
 
-def interactive_help() -> ['types.ReplyKeyboardMarkup']:
+def interactive_help(user_id: int) -> ['types.ReplyKeyboardMarkup']:
     """
     This set of buttons is called when user called help and received
     a list of commands. He can enter these commands, but for dumb people we
     usually need dumb and simple gui (buttons)
     """
+    language = profile_user(tg_user_id=user_id, language="!load!")["language"]
     markup = types.ReplyKeyboardMarkup(
         is_persistent=False,
         one_time_keyboard=False,
@@ -86,10 +95,10 @@ def interactive_help() -> ['types.ReplyKeyboardMarkup']:
         row_width=1
     )
 
-    auto_location_btn = types.KeyboardButton('🧭️ Искать по моему местоположению')
-    manual_location_btn = types.KeyboardButton('🔍️ Искать другой город')
+    auto_location_btn = types.KeyboardButton(buttons[language]["autoloc"])
+    manual_location_btn = types.KeyboardButton(buttons[language]["manual_loc"])
     # subscribe_btn
-    main_menu_btn = types.KeyboardButton('👈️ Вернуться в главное меню')
+    main_menu_btn = types.KeyboardButton(buttons[language]["to_main"])
 
     markup.add(
         auto_location_btn,
@@ -100,10 +109,11 @@ def interactive_help() -> ['types.ReplyKeyboardMarkup']:
     return markup
 
 
-def confirm_city(from_results: List) -> ['types.ReplyKeyboardMarkup']:
+def confirm_city(from_results: List, user_id: int) -> ['types.ReplyKeyboardMarkup']:
     """
     This markup pops up in the manual search only. After all the variants are provided
     """
+    language = profile_user(tg_user_id=user_id, language="!load!")["language"]
     markup = types.ReplyKeyboardMarkup(
         is_persistent=False,
         one_time_keyboard=False,
@@ -126,44 +136,45 @@ def confirm_city(from_results: List) -> ['types.ReplyKeyboardMarkup']:
         button = types.KeyboardButton(f'{label}\n')
         markup.add(button)
 
-    no_city_btn = types.KeyboardButton('Моего города тут нет')
-    main_menu_btn = types.KeyboardButton('👈️ Вернуться в главное меню')
+    no_city_btn = types.KeyboardButton(buttons[language]["no_my_city"])
+    main_menu_btn = types.KeyboardButton(buttons[language]["to_main"])
     markup.add(no_city_btn, main_menu_btn)
 
     return markup
 
 
-def to_main_menu() -> ['types.ReplyKeyboardMarkup']:
+def to_main_menu(user_id: int) -> ['types.ReplyKeyboardMarkup']:
     """
     This func consists of just a button to the main menu
     """
+    language = profile_user(tg_user_id=user_id, language="!load!")["language"]
     markup = types.ReplyKeyboardMarkup(
         is_persistent=False,
         one_time_keyboard=False,
         resize_keyboard=True,
         row_width=1
     )
-    main_menu_btn = types.KeyboardButton('👈️ Вернуться в главное меню')
+    main_menu_btn = types.KeyboardButton(buttons[language]["to_main"])
     markup.add(main_menu_btn)
 
     return markup
 
 
-def forecast_variants() -> ['types.ReplyKeyboardMarkup']:
+def forecast_variants(user_id: int) -> ['types.ReplyKeyboardMarkup']:
     """
     This markup offers the user to choose the period of forecast
     """
-
+    language = profile_user(tg_user_id=user_id, language="!load!")["language"]
     markup = types.ReplyKeyboardMarkup(
         is_persistent=False,
         one_time_keyboard=False,
         resize_keyboard=True,
         row_width=1
     )
-    today_btn = types.KeyboardButton('На сегодня')
-    tomorrow_btn = types.KeyboardButton('На завтра')
-    three_days_btn = types.KeyboardButton('На три дня')
-    main_menu_btn = types.KeyboardButton('👈️ Вернуться в главное меню')
+    today_btn = types.KeyboardButton(buttons[language]["for_today"])
+    tomorrow_btn = types.KeyboardButton(buttons[language]["for_tomorrow"])
+    three_days_btn = types.KeyboardButton(buttons[language]["for_three_days"])
+    main_menu_btn = types.KeyboardButton(buttons[language]["to_main"])
 
     markup.add(
         today_btn,
@@ -175,7 +186,9 @@ def forecast_variants() -> ['types.ReplyKeyboardMarkup']:
     return markup
 
 
-def if_wants_hourly_forecast(forecast_object: ['weather.ForecastWeather']) -> ['types.ReplyKeyboardMarkup']:
+def if_wants_hourly_forecast(forecast_object: ['weather.ForecastWeather'],
+                             user_id: int) -> ['types.ReplyKeyboardMarkup']:
+    language = profile_user(tg_user_id=user_id, language="!load!")["language"]
     markup = types.ReplyKeyboardMarkup(
         is_persistent=False,
         one_time_keyboard=False,
@@ -184,22 +197,23 @@ def if_wants_hourly_forecast(forecast_object: ['weather.ForecastWeather']) -> ['
     )
 
     for daily_forecast in forecast_object.daily_forecasts:
-        markup.add(types.KeyboardButton(f'Почасовой прогноз на {daily_forecast.date}'))
+        markup.add(types.KeyboardButton(f'{buttons[language]["hourly_for"]} {daily_forecast.date}'))
 
-    markup.add(types.KeyboardButton('🔍️ Искать другой город'))
-    markup.add(types.KeyboardButton('⚡️ Погода прямо сейчас'))
-    markup.add(types.KeyboardButton('👈️ Вернуться в главное меню'))
+    markup.add(types.KeyboardButton(buttons[language]["manual_loc"]))
+    markup.add(types.KeyboardButton(buttons[language]["weather_now"]))
+    markup.add(types.KeyboardButton(buttons[language]["to_main"]))
 
     return markup
 
 
-def period_wants_hourly_forecast() -> ['types.ReplyKeyboardMarkup']:
+def period_wants_hourly_forecast(user_id: int) -> ['types.ReplyKeyboardMarkup']:
     """
     This keyboard is activated when the user chooses for what period of time
     (night, morning, day, evening) he wants hourly forecast
     Returns:
         telebot markup
     """
+    language = profile_user(tg_user_id=user_id, language="!load!")["language"]
     markup = types.ReplyKeyboardMarkup(
         is_persistent=False,
         one_time_keyboard=False,
@@ -207,11 +221,26 @@ def period_wants_hourly_forecast() -> ['types.ReplyKeyboardMarkup']:
         row_width=1
     )
 
-    markup.add(types.KeyboardButton('На утро (6-12 часов)'))
-    markup.add(types.KeyboardButton('На день (12-18 часов)'))
-    markup.add(types.KeyboardButton('На вечер (18-24 часа)'))
-    markup.add(types.KeyboardButton('На ночь (0-6 часов)'))
-    markup.add(types.KeyboardButton('👈️ Вернуться в главное меню'))
+    markup.add(types.KeyboardButton(buttons[language]["for_morning"]))
+    markup.add(types.KeyboardButton(buttons[language]["for_day"]))
+    markup.add(types.KeyboardButton(buttons[language]["for_evening"]))
+    markup.add(types.KeyboardButton(buttons[language]["for_night"]))
+    markup.add(types.KeyboardButton(buttons[language]["to_main"]))
+
+    return markup
+
+
+def language_select() -> ['types.ReplyKeyboardMarkup']:
+    """language select keyboard"""
+    markup = types.ReplyKeyboardMarkup(
+        is_persistent=False,
+        one_time_keyboard=False,
+        resize_keyboard=True,
+        row_width=1
+    )
+
+    markup.add(types.KeyboardButton('🇷🇺️ Русский'))
+    markup.add(types.KeyboardButton('🇬🇧️ English'))
 
     return markup
 

@@ -1,0 +1,42 @@
+{
+  "ru": {
+    "guide": "❓\uFE0F Какие команды ты можешь выполнять?",
+    "autoloc": "\uD83E\uDDED\uFE0F Искать по моему местоположению",
+    "manual_loc": "\uD83D\uDD0D\uFE0F Искать другой город",
+    "authors": "\uD83D\uDC68\u200D\uD83D\uDCBB\uFE0F Где твой хозяин, кто тебя создал?",
+    "real": "\uD83D\uDDBC\uFE0F Как ты выглядишь в реальной жизни?",
+    "share_geo": "\uD83D\uDCCD\uFE0F Поделиться своей геопозицией",
+    "to_main": "\uD83D\uDC48\uFE0F Вернуться в главное меню",
+    "weather_now": "⚡\uFE0F Погода прямо сейчас",
+    "forecast": "⌚\uFE0F Прогноз погоды",
+    "no_my_city": "Моего города тут нет",
+    "for_today": "На сегодня",
+    "for_tomorrow": "На завтра",
+    "for_three_days": "На три дня",
+    "hourly_for": "Почасовой прогноз на",
+    "for_morning": "На утро (6-12 часов)",
+    "for_day": "На день (12-18 часов)",
+    "for_evening": "На вечер (18-24 часа)",
+    "for_night": "На ночь (0-6 часов)"
+  },
+  "en": {
+    "guide": "❓\uFE0F What can you do?",
+    "autoloc": "\uD83E\uDDED\uFE0F Search in my location",
+    "manual_loc": "\uD83D\uDD0D\uFE0F Search somewhere else",
+    "authors": "\uD83D\uDC68\u200D\uD83D\uDCBB\uFE0F Where is your owner, who created you?",
+    "real": "\uD83D\uDDBC\uFE0F What do you look like in real life?",
+    "share_geo": "\uD83D\uDCCD\uFE0F Share my location",
+    "to_main": "\uD83D\uDC48\uFE0F Back to main menu",
+    "weather_now": "⚡\uFE0F Weather online",
+    "forecast": "⌚\uFE0F Weather forecast",
+    "no_my_city": "There is no my city here",
+    "for_today": "For today",
+    "for_tomorrow": "For tomorrow",
+    "for_three_days": "For three days",
+    "hourly_for": "Hourly forecast for",
+    "for_morning": "Morning (6-12 am)",
+    "for_day": "Day (12-6 pm)",
+    "for_evening": "Evening (6-12 pm)",
+    "for_night": "Night (12-6 am)"
+  }
+}
