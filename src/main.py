@@ -18,7 +18,7 @@ def main() -> None:
     tg = importlib.import_module('src.bin.telegramapi')
     print('Access granted!')
     print('Bot is currently running...')
-    tg.bot.polling(none_stop=True)
+    tg.bot.infinity_polling()
     print('Bot has been stopped.')
 
 

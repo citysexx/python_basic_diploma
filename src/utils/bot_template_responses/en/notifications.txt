@@ -1,6 +1,6 @@
 tell_location><Your location:{nl}{location}.{nl}Decide next actions:
 voice_reject><Voice messages are unacceptable!
-github><My owner's Github:{nl}https://github.com/citysexx
+github><My owner's Github:{nl}https://github.com/dmitry-goryachev
 caption><This is me when I'm not working:
 main_menu><Main menu
 share_loc><Share your location with us to continue. Press the button below:

@@ -1,6 +1,6 @@
 tell_location><Ваше местоположение:{nl}{location}.{nl}Выберите дальнейшие действия:
 voice_reject><Голосовые сообщения не принимаются!
-github><Github моего хозяина:{nl}https://github.com/citysexx
+github><Github моего хозяина:{nl}https://github.com/dmitry-goryachev
 caption><Вот так я выгляжу, когда не работаю:
 main_menu><Главное меню
 share_loc><Поделитесь своим местоположением, чтобы продолжить. Нажмите на кнопку ниже:
