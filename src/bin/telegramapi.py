@@ -20,6 +20,12 @@ def send_welcome(message):
     recorder.log_message(message)
     profile_user(
         tg_user_id=message.from_user.id,
+        username=message.from_user.first_name,
+        usersecondname=message.from_user.last_name,
+        current_location="not set",
+        provided_location="not set",
+        desired_forecast_date="not set",
+        current_forecast="none",
         registered="true",
         active_window='/lang',
         language='none',
