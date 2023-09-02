@@ -21,14 +21,14 @@ def main(user_id: int) -> ['types.ReplyKeyboardMarkup']:
     auto_location_btn = types.KeyboardButton(buttons[language]["autoloc"])
     manual_location_btn = types.KeyboardButton(buttons[language]["manual_loc"])
     owner_btn = types.KeyboardButton(buttons[language]["authors"])
-    cat_real_look_btn = types.KeyboardButton(buttons[language]["real"])
+    # cat_real_look_btn = types.KeyboardButton(buttons[language]["real"])
 
     markup.add(
         help_btn,
         auto_location_btn,
         manual_location_btn,
         owner_btn,
-        cat_real_look_btn
+        # cat_real_look_btn
     )
 
     return markup
