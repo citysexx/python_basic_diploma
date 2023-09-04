@@ -5,11 +5,13 @@ import ast
 from src.configs.config import OPENING_PHRASES, WEATHER_TOKEN
 from src.utils.funcs import decode_western_time_format, provide_random_phrase
 from translate import Translator
+from os import getenv
 # не трогать дейттайм! Хоть он типа и не используется, но он нужен для АПИ прогноза
 import datetime
 
 # Configure API key authorization: ApiKeyAuth
 configuration = swagger_client.Configuration()
+configuration.proxy = getenv('PROXY_CONF', None)
 configuration.api_key['key'] = WEATHER_TOKEN
 
 # create an instance of the API class
