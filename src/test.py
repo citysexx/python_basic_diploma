@@ -18,6 +18,7 @@ def dummy_tested_success() -> bool:
 
         # launch a dummy weather api
         configuration = swagger_client.Configuration()
+        configuration.proxy = getenv('PROXY_CONF', None)
         configuration.api_key['key'] = getenv("WEATHER_TOKEN")
         api_instance = swagger_client.APIsApi(swagger_client.ApiClient(configuration))
         api_instance.realtime_weather('Vladivostok')
