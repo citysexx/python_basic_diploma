@@ -9,13 +9,13 @@ def log_message(message: ['telebot.types.Message']) -> None:
     The recordings depend on a message type.
     """
     try:
-        mkdir('logs')
+        mkdir('src/logs')
     except FileExistsError:
         pass
 
     string = ''
 
-    with open('logs/user_history.log', 'a', encoding='utf-8') as file:
+    with open('src/logs/user_history.log', 'a', encoding='utf-8') as file:
         if message.location:
             dict_from_loc = eval(str(message.location))
             string = f'On {datetime.utcfromtimestamp(message.date)} GMT ' \

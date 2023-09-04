@@ -8,7 +8,7 @@ TELEGRAM_TOKEN = getenv("TELEGRAM_TOKEN")
 WEATHER_TOKEN = getenv("WEATHER_TOKEN")
 
 # Fix the paths, making it possible to access from all files and dirs
-needed_dir = path.join('utils', 'bot_template_responses')
+needed_dir = path.join('src', 'utils', 'bot_template_responses')
 current_dir = path.abspath(curdir)
 working_dir = ''
 while True:

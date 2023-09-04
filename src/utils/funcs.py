@@ -6,8 +6,8 @@ from os import path, mkdir
 from random import choice
 
 
-inputs_en: Dict[AnyStr, AnyStr] = json.load(open(path.join('.', 'gui/buttons.json'), 'r', encoding='utf-8'))["en"]
-inputs_ru: Dict[AnyStr, AnyStr] = json.load(open(path.join('.', 'gui/buttons.json'), 'r', encoding='utf-8'))["ru"]
+inputs_en: Dict[AnyStr, AnyStr] = json.load(open(path.join('src', 'gui', 'buttons.json'), 'r', encoding='utf-8'))["en"]
+inputs_ru: Dict[AnyStr, AnyStr] = json.load(open(path.join('src', 'gui', 'buttons.json'), 'r', encoding='utf-8'))["ru"]
 
 
 def feel_msg(user_input: ['telebot.types.Message'], language: AnyStr) -> Dict[AnyStr, bool]:
@@ -119,9 +119,9 @@ def profile_user(*,
     # define func mode. 'l' for load and 's' for save.
     mode = 'l' if all_loads else 's'
 
-    if not path.exists(path.join('profiles')):
-        mkdir(path.join('profiles'))
-    path_to_config = path.join('profiles', f'{tg_user_id}.json')
+    if not path.exists(path.join('src', 'profiles')):
+        mkdir(path.join('src', 'profiles'))
+    path_to_config = path.join('src', 'profiles', f'{tg_user_id}.json')
 
     # check if file exists and, if not, 'touch' it
     if not path.exists(path_to_config):
@@ -193,7 +193,7 @@ def provide_random_phrase(phrase_list: List) -> AnyStr:
 
 def mute_env() -> None:
     """func writes env variables into the .env"""
-    path_to_env = path.join('.', '.env')
+    path_to_env = path.join('src', '.env')
 
     telegram_api_key = input('Enter Telegram API key >>> ')
     weather_api_key = input('Enter Weather API key >>> ')
@@ -207,7 +207,7 @@ def mute_env() -> None:
 
 def chenv() -> None:
     """create an empty .env file if there is none"""
-    path_to_env = path.join('.', '.env')
+    path_to_env = path.join('src', '.env')
 
     if path.exists(path_to_env):
         return

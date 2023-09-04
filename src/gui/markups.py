@@ -3,9 +3,10 @@ from telebot import types
 from src.bin import weather
 from src.utils.funcs import profile_user
 import json
+from os import path
 
 
-buttons = json.load(open('gui/buttons.json', 'r', encoding='utf-8'))
+buttons = json.load(open(path.join('src', 'gui', 'buttons.json'), 'r', encoding='utf-8'))
 
 
 def main(user_id: int) -> ['types.ReplyKeyboardMarkup']:
